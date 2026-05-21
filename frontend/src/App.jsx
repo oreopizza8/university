@@ -2,7 +2,6 @@ import { useState } from 'react';
 import ServiceModeToggle from './components/ServiceModeToggle.jsx';
 import DiagnosticInputForm from './components/DiagnosticInputForm.jsx';
 import DiagnosticResult from './components/DiagnosticResult.jsx';
-import DistributionChart from './components/DistributionChart.jsx';
 import MyLineFinder from './components/MyLineFinder.jsx';
 import { postDiagnostic } from './api/diagnostic.js';
 
@@ -80,7 +79,6 @@ export default function App() {
             )}
 
             {result && <DiagnosticResult result={result} />}
-            {result && <DistributionChart result={result} />}
           </>
         )}
       </main>

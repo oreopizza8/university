@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { searchUniversities, searchHighSchools, searchSusi } from '../api/diagnostic.js';
+import { searchUniversities, searchSusi } from '../api/diagnostic.js';
 
 const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const EXAM_TYPES = ['고1 학평', '고2 학평', '고3 6월 모의', '고3 9월 모의', '수능'];
+const HS_TYPES = ['일반고', '특목고', '자사고', '자율고', '특성화고'];
 
 export default function DiagnosticInputForm({ isGlobal, susiMode = false, onSubmit, loading }) {
   const [form, setForm] = useState({
@@ -16,36 +17,23 @@ export default function DiagnosticInputForm({ isGlobal, susiMode = false, onSubm
     naesinAverage: 2.5,
     targetUniversity: '',
     targetDepartment: '',
-    highSchoolName: '',
-    highSchoolCode: '',
+    highSchoolType: '',
   });
 
   const [suggestions, setSuggestions] = useState([]);
   const [showList, setShowList] = useState(false);
-  const [hsSuggestions, setHsSuggestions] = useState([]);
-  const [showHsList, setShowHsList] = useState(false);
+  const [globalUnis, setGlobalUnis] = useState([]);
 
   useEffect(() => {
     setForm((f) => ({ ...f, targetUniversity: '', targetDepartment: '' }));
     setSuggestions([]);
   }, [isGlobal, susiMode]);
 
-  // 출신 고교 자동완성 (국내 모드 전용)
+  // 해외 대학 목록(드롭다운용) — 수가 적어 자유입력 대신 선택
   useEffect(() => {
-    if (isGlobal || !form.highSchoolName || form.highSchoolName.length < 1) {
-      setHsSuggestions([]);
-      return;
-    }
-    const t = setTimeout(async () => {
-      try {
-        const res = await searchHighSchools(form.highSchoolName);
-        setHsSuggestions(res);
-      } catch (e) {
-        console.error(e);
-      }
-    }, 200);
-    return () => clearTimeout(t);
-  }, [form.highSchoolName, isGlobal]);
+    if (!isGlobal) return;
+    searchUniversities(true, '').then(setGlobalUnis).catch(() => {});
+  }, [isGlobal]);
 
   useEffect(() => {
     if (!form.targetUniversity || form.targetUniversity.length < 1) {
@@ -76,11 +64,6 @@ export default function DiagnosticInputForm({ isGlobal, susiMode = false, onSubm
       targetDepartment: s.departmentName || form.targetDepartment,
     });
     setShowList(false);
-  };
-
-  const pickHighSchool = (s) => {
-    setForm({ ...form, highSchoolName: s.schoolName, highSchoolCode: s.schoolCode });
-    setShowHsList(false);
   };
 
   const submit = (e) => {
@@ -138,71 +121,62 @@ export default function DiagnosticInputForm({ isGlobal, susiMode = false, onSubm
       )}
 
       {!isGlobal && (
+        <div>
+          <Field label="고교 유형 (선택)">
+            <select value={form.highSchoolType} onChange={update('highSchoolType')} className="input">
+              <option value="">선택 안 함</option>
+              {HS_TYPES.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </Field>
+          <p className="text-xs text-slate-400 mt-1">고교 유형에 따른 수시 환경 안내에 쓰입니다. 정시 위치 계산에는 영향 없습니다.</p>
+        </div>
+      )}
+
+      {isGlobal ? (
+        <Field label="목표 대학">
+          <select value={form.targetUniversity} onChange={update('targetUniversity')} className="input">
+            <option value="">대학을 선택하세요</option>
+            {globalUnis.map((s) => (
+              <option key={s.id} value={s.universityName}>
+                {s.universityName}{s.country ? ` (${s.country})` : ''}
+              </option>
+            ))}
+          </select>
+        </Field>
+      ) : (
         <div className="relative">
-          <Field label="출신 고교 (선택)">
+          <Field label="목표 대학">
             <input
               type="text"
-              value={form.highSchoolName}
+              value={form.targetUniversity}
               onChange={(e) => {
-                setForm({ ...form, highSchoolName: e.target.value, highSchoolCode: '' });
-                setShowHsList(true);
+                update('targetUniversity')(e);
+                setShowList(true);
               }}
-              onFocus={() => setShowHsList(true)}
-              placeholder="예: 대원외국어고등학교"
+              onFocus={() => setShowList(true)}
+              placeholder="서울대학교"
               className="input"
               autoComplete="off"
             />
           </Field>
-          <p className="text-xs text-slate-400 mt-1">고교 유형(일반고·특목고·자사고)에 따른 수시 환경 안내에 쓰입니다. 정시 위치 계산에는 영향 없습니다.</p>
-          {showHsList && hsSuggestions.length > 0 && (
+          {showList && suggestions.length > 0 && (
             <ul className="absolute z-10 left-0 right-0 bg-white border border-slate-200 rounded-lg mt-1 max-h-56 overflow-y-auto shadow">
-              {hsSuggestions.map((s) => (
+              {suggestions.map((s) => (
                 <li
                   key={s.id}
-                  onClick={() => pickHighSchool(s)}
+                  onClick={() => pickSuggestion(s)}
                   className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm"
                 >
-                  <span className="font-medium">{s.schoolName}</span>
-                  {s.highSchoolType && <span className="text-slate-500 text-xs ml-2">{s.highSchoolType}</span>}
-                  {s.regionName && <span className="text-slate-400 text-xs ml-2">{s.regionName}</span>}
+                  <span className="font-medium">{s.universityName}</span>
+                  {s.departmentName && <span className="text-slate-500"> · {s.departmentName}</span>}
                 </li>
               ))}
             </ul>
           )}
         </div>
       )}
-
-      <div className="relative">
-        <Field label={isGlobal ? '목표 대학 (영문)' : '목표 대학'}>
-          <input
-            type="text"
-            value={form.targetUniversity}
-            onChange={(e) => {
-              update('targetUniversity')(e);
-              setShowList(true);
-            }}
-            onFocus={() => setShowList(true)}
-            placeholder={isGlobal ? 'Harvard University' : '서울대학교'}
-            className="input"
-            autoComplete="off"
-          />
-        </Field>
-        {showList && suggestions.length > 0 && (
-          <ul className="absolute z-10 left-0 right-0 bg-white border border-slate-200 rounded-lg mt-1 max-h-56 overflow-y-auto shadow">
-            {suggestions.map((s) => (
-              <li
-                key={s.id}
-                onClick={() => pickSuggestion(s)}
-                className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm"
-              >
-                <span className="font-medium">{s.universityName}</span>
-                {s.departmentName && <span className="text-slate-500"> · {s.departmentName}</span>}
-                {s.country && <span className="text-slate-400 text-xs ml-2">[{s.country}]</span>}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
 
       {!isGlobal && (
         <Field label="목표 학과">
