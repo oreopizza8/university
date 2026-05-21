@@ -1,0 +1,59 @@
+spring:
+  profiles:
+    active: default
+  datasource:
+    url: jdbc:h2:mem:diagnostic;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
+
+app:
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174}
+  sync-cron: ${SYNC_CRON:0 0 4 * * *}
+  kcue:
+    api-key: ${KCUE_API_KEY:}
+    api-base: ${KCUE_API_BASE:https://www.academyinfo.go.kr/openApi}
+    sync-cron: ${KCUE_SYNC_CRON:0 30 4 * * *}
+  neis:
+    api-key: ${NEIS_API_KEY:}
+    api-base: ${NEIS_API_BASE:https://open.neis.go.kr/hub}
+    sync-cron: ${NEIS_SYNC_CRON:0 0 5 * * *}
+  scorecard:
+    api-key: ${SCORECARD_API_KEY:}
+    api-base: ${SCORECARD_API_BASE:https://api.data.gov/ed/collegescorecard/v1}
+    sync-cron: ${SCORECARD_SYNC_CRON:0 0 6 * * MON}
+    fields: latest.admissions.sat_scores.25th_percentile.math,latest.admissions.sat_scores.75th_percentile.math,latest.admissions.sat_scores.25th_percentile.critical_reading,latest.admissions.sat_scores.75th_percentile.critical_reading
+    school-ids: ${SCORECARD_SCHOOL_IDS:166027,166683,243744,186131,130794,190150,144050,110635,110662,193900}
+  data-staging-dir: ${DATA_STAGING_DIR:./data-staging}
+  ratelimit:
+    per-minute: ${RATELIMIT_PER_MINUTE:10}
+    per-hour: ${RATELIMIT_PER_HOUR:50}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQLDialect

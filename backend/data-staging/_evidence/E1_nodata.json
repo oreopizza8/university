@@ -1,0 +1,71 @@
+﻿{
+    "mode":  "DOMESTIC",
+    "nationalPercentile":  96.0,
+    "cutoffAvailable":  false,
+    "signal":  null,
+    "probabilityMin":  null,
+    "probabilityMax":  null,
+    "targetUniversity":  "연세대학교",
+    "targetDepartment":  "존재하지않는학과",
+    "targetCutoffPercentile":  null,
+    "targetCutoffGrade":  null,
+    "admissionType":  null,
+    "convertedGpa":  null,
+    "convertedSat":  null,
+    "summary":  "이 대학·학과의 정시 70%컷 입결 데이터가 아직 없어 합격선 판정은 보류했습니다. 아래 전국 백분위와 일반 조언을 참고하세요.",
+    "guideQuestions":  [
+                           "최근 3개년 정시 70% 컷이 우리 학교 평균보다 어떻게 움직였나요?",
+                           "수시 내신 반영 방식(전과목/주요과목)이 정확히 어떻게 되나요?",
+                           "표준점수·백분위 중 어떤 지표를 환산식에 쓰나요? 가중치 산식 공개 부탁드립니다.",
+                           "이 점수대 학생이 작년에 실제로 합격/불합격한 비율 데이터 보여주실 수 있나요?"
+                       ],
+    "highSchoolType":  null,
+    "highSchoolContext":  null,
+    "solution":  {
+                     "rationale":  "연세대학교 존재하지않는학과의 정시 70%컷 입결 데이터가 아직 없어 합격 가능성은 판정하지 못했습니다. 대신 전국 백분위(약 96.0, 상위 4.0%)와 과목 강약점으로 방향을 제시합니다.",
+                     "subjects":  [
+                                      {
+                                          "subject":  "국어",
+                                          "grade":  1,
+                                          "percentile":  96.0,
+                                          "weight":  null,
+                                          "role":  "보통",
+                                          "note":  "평균 수준"
+                                      },
+                                      {
+                                          "subject":  "수학",
+                                          "grade":  1,
+                                          "percentile":  96.0,
+                                          "weight":  null,
+                                          "role":  "보통",
+                                          "note":  "평균 수준"
+                                      },
+                                      {
+                                          "subject":  "영어",
+                                          "grade":  1,
+                                          "percentile":  96.0,
+                                          "weight":  null,
+                                          "role":  "보통",
+                                          "note":  "평균 수준"
+                                      },
+                                      {
+                                          "subject":  "탐구",
+                                          "grade":  1,
+                                          "percentile":  96.0,
+                                          "weight":  null,
+                                          "role":  "보통",
+                                          "note":  "평균 수준"
+                                      }
+                                  ],
+                     "nextSteps":  [
+                                       "합격선 비교는 불가능한 상태라, 아래는 한 등급 향상 시 전국 백분위 변화입니다."
+                                   ],
+                     "strategy":  [
+                                      "정확한 합격 판정을 위해, 목표 대학·학과의 최근 정시 70%컷(대입정보포털 \u0027어디가\u0027 또는 대학 발표)을 확인하세요.",
+                                      "아래는 내 전국 백분위 기준으로 입결이 등록된 학과 중 비슷한 라인입니다(참고용).",
+                                      "내 점수 이하 컷: 성균관대학교 반도체융합공학과(컷 96), 고려대학교 약학과(컷 96), 연세대학교 디스플레이융합공학과(컷 96)",
+                                      "내 점수 초과 컷: 강원대학교 약학과(컷 96), 부산대학교 의예과(컷 96), 연세대학교 의예과(강원인재)(컷 96)"
+                                  ]
+                 },
+    "dataSource":  "입결 데이터 미보유 · 전국 백분위는 표준 반영비율 기준 근사"
+}

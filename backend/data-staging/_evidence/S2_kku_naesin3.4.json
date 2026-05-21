@@ -1,0 +1,38 @@
+﻿{
+    "mode":  "SUSI",
+    "nationalPercentile":  70.2,
+    "cutoffAvailable":  true,
+    "signal":  "적정",
+    "probabilityMin":  55,
+    "probabilityMax":  75,
+    "targetUniversity":  "건국대학교",
+    "targetDepartment":  "경영학과",
+    "targetCutoffPercentile":  null,
+    "targetCutoffGrade":  3.5,
+    "admissionType":  "",
+    "convertedGpa":  null,
+    "convertedSat":  null,
+    "summary":  "내신 평균 3.40등급 / 교과전형 70%컷 3.50등급 → 격차 +0.10등급",
+    "guideQuestions":  [
+                           "학생부교과 반영 방식(전과목/주요과목/학년별 가중)이 정확히 어떻게 되나요?",
+                           "진로선택과목·전문교과 반영 방식과 가산점이 있나요?",
+                           "수능 최저학력기준이 있나요? 있다면 충족 가능성은요?",
+                           "이 내신대 학생의 작년 실제 합격/불합격 비율 데이터를 볼 수 있나요?"
+                       ],
+    "highSchoolType":  null,
+    "highSchoolContext":  null,
+    "solution":  {
+                     "rationale":  "내신 평균 3.40등급은 건국대학교 교과전형 70%컷 3.50등급 대비 +0.10등급입니다. 70%컷은 합격자의 70%가 이 등급 이상인 안정선이라, 합격 가능하나 안심하긴 이른 적정권입니다.",
+                     "subjects":  [
+
+                                  ],
+                     "nextSteps":  [
+                                       "이미 70%컷 위입니다. 내신 외에 수능최저·면접 요건을 점검하세요."
+                                   ],
+                     "strategy":  [
+                                      "경계선입니다. 교과 한 장에 의존하지 말고 종합·논술·정시와 분산하세요.",
+                                      "수능 최저학력기준 충족 여부가 실질 합격선을 좌우합니다. 최저부터 확인하세요."
+                                  ]
+                 },
+    "dataSource":  "2025 어디가 공식 수시 내신 입결 기준 · 전형 다수 시 중앙값 기준"
+}

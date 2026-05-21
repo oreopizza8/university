@@ -1,0 +1,70 @@
+﻿{
+    "mode":  "DOMESTIC",
+    "nationalPercentile":  96.0,
+    "cutoffAvailable":  true,
+    "signal":  "안정",
+    "probabilityMin":  75,
+    "probabilityMax":  95,
+    "targetUniversity":  "연세대학교",
+    "targetDepartment":  "경영학과",
+    "targetCutoffPercentile":  93.8,
+    "targetCutoffGrade":  null,
+    "admissionType":  null,
+    "convertedGpa":  null,
+    "convertedSat":  null,
+    "summary":  "반영비율 가중 백분위 96.0 / 목표컷 70% 컷 93.8 → 격차 2.2pp",
+    "guideQuestions":  [
+                           "최근 3개년 정시 70% 컷이 우리 학교 평균보다 어떻게 움직였나요?",
+                           "수시 내신 반영 방식(전과목/주요과목)이 정확히 어떻게 되나요?",
+                           "표준점수·백분위 중 어떤 지표를 환산식에 쓰나요? 가중치 산식 공개 부탁드립니다.",
+                           "이 점수대 학생이 작년에 실제로 합격/불합격한 비율 데이터 보여주실 수 있나요?"
+                       ],
+    "highSchoolType":  null,
+    "highSchoolContext":  null,
+    "solution":  {
+                     "rationale":  "가중 백분위 96.0은 연세대학교 경영학과 70%컷 93.8 대비 +2.2pp입니다. 70%컷은 합격자의 70%가 이 점수 이상인 안정선이라, 합격 안정권입니다.",
+                     "subjects":  [
+                                      {
+                                          "subject":  "국어",
+                                          "grade":  1,
+                                          "percentile":  96.0,
+                                          "weight":  0.3,
+                                          "role":  "보통",
+                                          "note":  "평균 수준"
+                                      },
+                                      {
+                                          "subject":  "수학",
+                                          "grade":  1,
+                                          "percentile":  96.0,
+                                          "weight":  0.25,
+                                          "role":  "보통",
+                                          "note":  "평균 수준"
+                                      },
+                                      {
+                                          "subject":  "영어",
+                                          "grade":  1,
+                                          "percentile":  96.0,
+                                          "weight":  0.2,
+                                          "role":  "보통",
+                                          "note":  "평균 수준"
+                                      },
+                                      {
+                                          "subject":  "탐구",
+                                          "grade":  1,
+                                          "percentile":  96.0,
+                                          "weight":  0.25,
+                                          "role":  "보통",
+                                          "note":  "평균 수준"
+                                      }
+                                  ],
+                     "nextSteps":  [
+                                       "이미 목표컷 위입니다. 아래는 한 단계 더 끌어올렸을 때의 변화입니다."
+                                   ],
+                     "strategy":  [
+                                      "정시 기준 합격선 위입니다. 같은 점수대에서 상향 1~2장을 더 노려볼 여지가 있습니다.",
+                                      "안정 지원 후보(내 점수가 컷 이상): 고려대학교 약학과(컷 96), 연세대학교 디스플레이융합공학과(컷 96), 성균관대학교 반도체융합공학과(컷 96)",
+                                      "소신 지원 후보(컷이 내 점수보다 높음): 연세대학교 의예과(강원인재)(컷 96), 부산대학교 의예과(컷 96), 강원대학교 약학과(컷 96)"
+                                  ]
+                 },
+    "dataSource":  "2025 어디가 공식 정시 입결(70%컷 백분위) · 반영비율은 계열 추정"
+}

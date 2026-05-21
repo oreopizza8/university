@@ -1,0 +1,21 @@
+country,universityName,satMath25th,satMath75th,satReading25th,satReading75th,avgGpa
+USA,Harvard University,760,800,740,780,4.18
+USA,MIT,790,800,740,780,4.17
+USA,Stanford University,760,800,720,780,4.15
+USA,Princeton University,760,790,730,780,3.95
+USA,Yale University,750,790,720,780,4.14
+USA,Columbia University,750,790,720,780,4.12
+USA,University of Chicago,770,800,730,770,4.10
+USA,UC Berkeley,710,790,670,750,4.05
+USA,UCLA,690,790,650,750,4.02
+USA,NYU,720,780,690,750,3.85
+UK,University of Oxford,720,790,700,780,3.95
+UK,University of Cambridge,720,790,700,780,3.95
+UK,Imperial College London,700,780,680,750,3.85
+UK,UCL,680,760,660,740,3.80
+JAPAN,University of Tokyo,700,780,680,750,3.90
+JAPAN,Kyoto University,680,760,660,740,3.85
+JAPAN,Waseda University,640,720,620,720,3.70
+JAPAN,Keio University,640,720,620,720,3.70
+CHINA,Tsinghua University,720,790,680,760,3.90
+CHINA,Peking University,720,790,680,760,3.90
