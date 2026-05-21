@@ -3,6 +3,7 @@ import ServiceModeToggle from './components/ServiceModeToggle.jsx';
 import DiagnosticInputForm from './components/DiagnosticInputForm.jsx';
 import DiagnosticResult from './components/DiagnosticResult.jsx';
 import MyLineFinder from './components/MyLineFinder.jsx';
+import DisclaimerModal from './components/DisclaimerModal.jsx';
 import { postDiagnostic } from './api/diagnostic.js';
 
 export default function App() {
@@ -12,6 +13,9 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showDisc, setShowDisc] = useState(() => {
+    try { return localStorage.getItem('disc_dismissed') !== '1'; } catch (e) { return true; }
+  });
 
   const handleSubmit = async (payload) => {
     setLoading(true);
@@ -28,6 +32,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
+      {showDisc && <DisclaimerModal onClose={() => setShowDisc(false)} />}
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between flex-wrap gap-3">
           <div>
