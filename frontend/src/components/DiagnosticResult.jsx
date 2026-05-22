@@ -203,7 +203,7 @@ function SolutionReportView({ solution, isGlobal }) {
                   </span>
                   <span className="text-slate-500 text-xs">
                     {s.grade != null && `${s.grade}등급 · `}
-                    {s.percentile != null && `위치 ${s.percentile}`}
+                    {s.percentile != null && `${isGlobal ? '위치' : '백분위'} ${s.percentile}`}
                     {s.weight != null && ` · 반영 ${Math.round(s.weight * 100)}%`}
                   </span>
                   <span className="text-slate-600 text-xs flex-1">{s.note}</span>

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { searchUniversities, searchSusi } from '../api/diagnostic.js';
 
 const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+// 등급 → 전국 상위 백분위 대표값 (engine GRADE_PCT와 동일). 정시 입력 시 등급 옆 병기용.
+const GRADE_PCT = { 1: 96, 2: 89, 3: 77, 4: 60, 5: 40, 6: 23, 7: 11, 8: 4, 9: 1 };
 const EXAM_TYPES = ['고1 학평', '고2 학평', '고3 6월 모의', '고3 9월 모의', '수능'];
 const HS_TYPES = ['일반고', '특목고', '자사고', '자율고', '특성화고'];
 
@@ -52,6 +54,16 @@ export default function DiagnosticInputForm({ isGlobal, susiMode = false, onSubm
     return () => clearTimeout(t);
   }, [form.targetUniversity, isGlobal, susiMode]);
 
+  // 고1·2 = 2025 신규 5등급제 세대 → 수시 내신 입력을 1~5로 제한. (정시·수능 모의는 학년 무관 9등급 유지)
+  const naesinScale = susiMode && Number(form.studentGrade) <= 2 ? 5 : 9;
+
+  // 학년 전환으로 척도가 5로 바뀌면, 5 초과 내신값을 상한으로 클램프해 잘못된 값 전송을 막는다.
+  useEffect(() => {
+    if (susiMode && Number(form.studentGrade) <= 2 && Number(form.naesinAverage) > 5) {
+      setForm((f) => ({ ...f, naesinAverage: 5 }));
+    }
+  }, [susiMode, form.studentGrade, form.naesinAverage]);
+
   const update = (k) => (e) => {
     const v = e.target.value;
     setForm({ ...form, [k]: isNaN(Number(v)) || v === '' ? v : Number(v) });
@@ -94,22 +106,34 @@ export default function DiagnosticInputForm({ isGlobal, susiMode = false, onSubm
 
       {susiMode ? (
         <div>
-          <Field label="내신 평균등급 (전 과목, 1.0~9.0)">
+          {naesinScale === 5 && (
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-2.5 py-1">
+              <span>🟢 신규 5등급제</span>
+              <span className="font-normal text-emerald-600">고{form.studentGrade} (2025~ 내신 5등급)</span>
+            </div>
+          )}
+          <Field label={`내신 평균등급 (전 과목, 1.0~${naesinScale}.0)`}>
             <input
-              type="number" min="1" max="9" step="0.01"
+              type="number" min="1" max={naesinScale} step="0.01"
               value={form.naesinAverage}
               onChange={update('naesinAverage')}
-              placeholder="예: 2.35"
+              placeholder={naesinScale === 5 ? '예: 2.30' : '예: 2.35'}
               className="input"
             />
           </Field>
           <p className="text-xs text-slate-400 mt-1">
             ※ 수시 <b>학생부교과(내신)</b> 기준입니다. 수능 최저학력기준·학생부종합(에세이·비교과)은 별도이며 본 진단에 미반영됩니다.
           </p>
+          {naesinScale === 5 && (
+            <p className="text-xs text-emerald-600 mt-1">
+              ※ 고1·2 신규 5등급제 내신을 전국 백분위로 변환해, 과거 9등급 기준 입결과 동일 척도로 비교합니다(패러다임 치환). 결과는 9등급 환산값으로도 함께 표시됩니다.
+            </p>
+          )}
         </div>
       ) : (
         <div>
-          <p className="text-sm font-semibold text-slate-700 mb-2">과목별 등급 (1~9)</p>
+          <p className="text-sm font-semibold text-slate-700 mb-1">과목별 등급 (1~9)</p>
+          <p className="text-xs text-slate-400 mb-2">※ 등급 선택 시 전국 상위 백분위(대표값)를 함께 기재합니다. 학평·모의고사 성적표의 백분위와 비교해 보세요. (영어·한국사 등 절대평가는 등가 환산값)</p>
           <div className="grid grid-cols-5 gap-3">
             <GradePicker label="국어" value={form.koreanGrade} onChange={update('koreanGrade')} />
             <GradePicker label="수학" value={form.mathGrade} onChange={update('mathGrade')} />
@@ -224,6 +248,7 @@ function GradePicker({ label, value, onChange }) {
           <option key={g} value={g}>{g}등급</option>
         ))}
       </select>
+      <span className="block text-[11px] text-indigo-500 mt-1 text-center">≈ 백분위 {GRADE_PCT[value] ?? '—'}</span>
     </label>
   );
 }

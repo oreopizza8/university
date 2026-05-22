@@ -16,7 +16,7 @@ const percentileSumToSat = (pko, pmath) => {
   const sum = Math.max(0, Math.min(100, pko)) + Math.max(0, Math.min(100, pmath));
   return Math.round((400 + (sum / 200) * 1200) / 10) * 10;
 };
-// 수시 내신 등급 → 전국 상위 백분위(선형보간)
+// 수시 내신 등급 → 전국 상위 백분위(선형보간) — 9등급제(고3·N수)
 const susiGradeToPercentile = (g) => {
   const p = [0, 96, 89, 77, 60, 40, 23, 11, 4, 1];
   g = Math.max(1, Math.min(9, g));
@@ -24,6 +24,28 @@ const susiGradeToPercentile = (g) => {
   if (lo === hi) return p[lo];
   return p[lo] + (p[hi] - p[lo]) * (g - lo);
 };
+// 신규 5등급제 내신(2025~ 고1·2) → 전국 상위 백분위(선형보간).
+// 각 등급대 누적분포의 중앙값 지점: 1등급=상위 5%, 2등급=22%, 3등급=50%, 4등급=78%, 5등급=95%.
+const NAESIN5_PCT = [0, 95, 78, 50, 22, 5]; // index = 등급(1~5)
+const susi5GradeToPercentile = (g) => {
+  g = Math.max(1, Math.min(5, g));
+  const lo = Math.floor(g), hi = Math.ceil(g);
+  if (lo === hi) return NAESIN5_PCT[lo];
+  return NAESIN5_PCT[lo] + (NAESIN5_PCT[hi] - NAESIN5_PCT[lo]) * (g - lo);
+};
+// 전국 상위 백분위 → 9등급제 등가 내신(susiGradeToPercentile의 역함수, 선형보간).
+// 고1·2의 5등급 내신을 9등급 기준 입결 컷과 비교하기 위한 패러다임 치환.
+const percentileToSusi9Grade = (pct) => {
+  const p = [0, 96, 89, 77, 60, 40, 23, 11, 4, 1]; // 등급↑ → 백분위↓ (단조 감소)
+  if (pct >= p[1]) return 1;
+  if (pct <= p[9]) return 9;
+  for (let g = 1; g < 9; g++) {
+    if (pct <= p[g] && pct >= p[g + 1]) return g + (pct - p[g]) / (p[g + 1] - p[g]);
+  }
+  return 9;
+};
+// 고1·2 = 신규 5등급제 세대 (정시·수능 모의는 학년 무관 9등급 유지).
+const isFiveScaleNaesin = (req) => Number(req.studentGrade) <= 2;
 
 // ===== 신호 (Signal) =====
 const SIG = {
@@ -200,26 +222,33 @@ function diagnoseSusi(req) {
     '진로선택과목·전문교과 반영 방식과 가산점이 있나요?', '수능 최저학력기준이 있나요? 있다면 충족 가능성은요?',
     '이 내신대 학생의 작년 실제 합격/불합격 비율 데이터를 볼 수 있나요?', ...hs.q];
   const naesin = req.naesinAverage;
-  const base = (extra) => ({ mode: 'SUSI', targetUniversity: req.targetUniversity || '', targetDepartment: req.targetDepartment || '', highSchoolType: hs.type, highSchoolContext: hs.message, guideQuestions: guide, dataSource: SUSI_SRC, ...extra });
+  // 고1·2(5등급제)는 [5등급 내신 → 전국 백분위 → 9등급 등가]로 치환해 9등급 기준 입결과 비교한다.
+  const five = isFiveScaleNaesin(req);
+  const nat = naesin == null ? null : (five ? susi5GradeToPercentile(naesin) : susiGradeToPercentile(naesin));
+  const naesin9 = naesin == null ? null : (five ? r2(percentileToSusi9Grade(nat)) : naesin); // 컷(9등급) 비교용
+  const naesinLabel = naesin == null ? '' : (five ? `${r2(naesin)}등급(5등급제·9등급 환산 ≈ ${naesin9})` : `${r2(naesin)}등급`);
+  const scaleNote = five ? '※ 고1·2 신규 5등급제 내신을 전국 백분위로 변환한 뒤, 과거 9등급 기준 입결 컷과 동일 척도로 맞춰 비교한 결과입니다(패러다임 치환). 대학 고유 반영방식에 따라 신호가 달라질 수 있습니다.' : null;
+  const base = (extra) => ({ mode: 'SUSI', targetUniversity: req.targetUniversity || '', targetDepartment: req.targetDepartment || '', highSchoolType: hs.type, highSchoolContext: hs.message, guideQuestions: guide, gradeScale: five ? 5 : 9, dataSource: SUSI_SRC, ...extra });
   if (naesin == null) return base({ cutoffAvailable: false, summary: '수시 진단에는 내신 평균등급 입력이 필요합니다.' });
   const valid = SUSI.filter((s) => s.u === req.targetUniversity && s.d === req.targetDepartment && s.g70 != null && s.g70 >= 1 && s.g70 <= 9);
-  if (!valid.length) return base({ cutoffAvailable: false, nationalPercentile: r1(susiGradeToPercentile(naesin)),
+  if (!valid.length) return base({ cutoffAvailable: false, nationalPercentile: r1(nat),
     summary: '이 대학·학과의 수시 내신 70%컷 데이터가 아직 없어 합격선 판정은 보류했습니다. 내신 상위 위치만 참고하세요.',
-    solution: { rationale: `입력하신 대학·학과의 수시 내신 70%컷 데이터가 없어 합격 판정은 보류했습니다. 내신 평균 ${r2(naesin)}등급의 전국 상위 위치만 참고하세요.`, subjects: [], nextSteps: ['목표 대학·학과의 최근 수시 교과 70%컷 등급(대입정보포털 \'어디가\')을 확인해 보세요.'], strategy: ['교과 외 학생부종합·논술 전형의 가능성도 함께 검토하세요.'] } });
+    solution: { rationale: `입력하신 대학·학과의 수시 내신 70%컷 데이터가 없어 합격 판정은 보류했습니다. 내신 평균 ${naesinLabel}의 전국 상위 위치(상위 ${r1(Math.max(0, 100 - nat))}%)만 참고하세요.`, subjects: [], nextSteps: ['목표 대학·학과의 최근 수시 교과 70%컷 등급(대입정보포털 \'어디가\')을 확인해 보세요.'], strategy: [...(scaleNote ? [scaleNote] : []), '교과 외 학생부종합·논술 전형의 가능성도 함께 검토하세요.'] } });
   valid.sort((a, b) => a.g70 - b.g70);
   const pick = valid[Math.floor(valid.length / 2)];
-  const cut = pick.g70, gap = cut - naesin, sig = ofSusiGradeGap(gap);
+  const cut = pick.g70, gap = r2(cut - naesin9), sig = ofSusiGradeGap(gap); // gap은 9등급 척도(컷-환산내신)
   const at = pick.at || '교과전형';
-  const next = [gap < 0 ? `목표컷까지 내신 ${r2(-gap)}등급 부족합니다. 남은 학기 주요과목 등급을 끌어올리면 격차가 줄어듭니다.` : '이미 70%컷 위입니다. 내신 외에 수능최저·면접 요건을 점검하세요.'];
+  const next = [gap < 0 ? `목표컷까지 (9등급 환산 기준) 내신 ${r2(-gap)}등급 부족합니다. 남은 학기 주요과목 등급을 끌어올리면 격차가 줄어듭니다.` : '이미 70%컷 위입니다. 내신 외에 수능최저·면접 요건을 점검하세요.'];
   if (valid.length > 1) next.push(`같은 학과 전형별 70%컷이 ${r2(valid[0].g70)}~${r2(valid[valid.length - 1].g70)}등급으로 분포합니다. 전형별 반영방식이 다르니 유리한 전형을 찾으세요.`);
   const strat = [gap >= 0.2 ? '내신 안정권입니다. 수시 교과를 안정 카드로 두고 상향 1~2장을 더 노려보세요.' : gap >= -0.2 ? '경계선입니다. 교과 한 장에 의존하지 말고 종합·논술·정시와 분산하세요.' : '교과로는 상향입니다. 학생부종합·논술 등 내신 외 요소가 강한 전형을 함께 검토하세요.',
+    ...(scaleNote ? [scaleNote] : []),
     '수능 최저학력기준 충족 여부가 실질 합격선을 좌우합니다. 최저부터 확인하세요.'];
   return base({ cutoffAvailable: true, targetUniversity: pick.u, targetDepartment: pick.d, admissionType: pick.at,
-    targetCutoffGrade: cut, nationalPercentile: r1(susiGradeToPercentile(naesin)),
+    targetCutoffGrade: cut, nationalPercentile: r1(nat),
     signal: sig.label, probabilityMin: sig.min, probabilityMax: sig.max,
-    summary: `내신 평균 ${r2(naesin)}등급 / ${at} 70%컷 ${r2(cut)}등급 → 격차 ${(gap >= 0 ? '+' : '')}${r2(gap)}등급`,
-    dataSource: SUSI_SRC + ' · 전형 다수 시 중앙값 기준',
-    solution: { rationale: `내신 평균 ${r2(naesin)}등급은 ${pick.u} ${at} 70%컷 ${r2(cut)}등급 대비 ${(gap >= 0 ? '+' : '')}${r2(gap)}등급입니다. 70%컷은 합격자의 70%가 이 등급 이상인 안정선이라, ${signalMeaning(sig)}`, subjects: [], nextSteps: next, strategy: strat } });
+    summary: `내신 평균 ${naesinLabel} / ${at} 70%컷 ${r2(cut)}등급 → 격차 ${(gap >= 0 ? '+' : '')}${r2(gap)}등급`,
+    dataSource: SUSI_SRC + ' · 전형 다수 시 중앙값 기준' + (five ? ' · 5등급제→9등급 치환' : ''),
+    solution: { rationale: `내신 평균 ${naesinLabel}은 ${pick.u} ${at} 70%컷 ${r2(cut)}등급 대비 ${(gap >= 0 ? '+' : '')}${r2(gap)}등급입니다. 70%컷은 합격자의 70%가 이 등급 이상인 안정선이라, ${signalMeaning(sig)}`, subjects: [], nextSteps: next, strategy: strat } });
 }
 
 // ===== 해외 유학 =====
